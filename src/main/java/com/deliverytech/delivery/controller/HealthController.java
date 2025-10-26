@@ -18,4 +18,24 @@ public class HealthController {
             "Service", "Delivery API"
         );
     }
+
+    @GetMapping("/info")
+    public AppInfo info() {
+        return new AppInfo(
+            "Delivery Tech API",
+            "1.0.0",
+            "Lucas Rosas da Cunha",
+            "JDK 21",
+            "Spring Boot 3.5.7"
+        );
+    }
+
+    // Record para demonstrar recurso do Java 14+ (disponível no JDK 21)
+    public record  AppInfo(
+        String application,
+        String version,
+        String developer,
+        String javaVersion,
+        String framework
+    ) {}
 }
