@@ -19,6 +19,7 @@ public class HealthController {
         );
     }
 
+    //Outro endpoint - retorna informação sobre o projeto
     @GetMapping("/info")
     public AppInfo info() {
         return new AppInfo(
