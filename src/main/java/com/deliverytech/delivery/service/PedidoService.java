@@ -5,6 +5,7 @@ import com.deliverytech.delivery.dto.PedidoResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
@@ -37,14 +38,14 @@ public class PedidoService {
      */
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
         // 1. Validar e buscar entidades relacionadas
-        // (As validações de campos @NotBlank, @NotNull, etc., são feitas pelo @Valid no Controller)
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + dto.getClienteId()));
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + dto.getClienteId())); // Alterado
 
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + dto.getRestauranteId()));
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        // 2. Mapear DTO para Entidade
+        // ... (restante do método para mapear DTO, definir valores padrão e salvar)
+        
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
@@ -52,12 +53,10 @@ public class PedidoService {
         pedido.setValorTotal(dto.getValorTotal());
         pedido.setObservacoes(dto.getObservacoes());
 
-        // 3. Definir valores padrão (gerenciados pelo sistema)
-        pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 15).toUpperCase()); // Gera um número de pedido
+        pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 15).toUpperCase()); 
         pedido.setDataPedido(LocalDateTime.now());
         pedido.setStatus("PENDENTE");
 
-        // 4. Salvar e retornar o DTO de resposta
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         return new PedidoResponseDTO(pedidoSalvo);
     }
@@ -106,18 +105,18 @@ public class PedidoService {
      * Atualizar status do pedido
      * (Refatorado para retornar DTO)
      */
-    public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
+public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Pedido não encontrado: " + id)); // Alterado
 
         // Validação de transição de status (exemplo)
         if (novoStatus == null || novoStatus.trim().isEmpty()) {
-            throw new IllegalArgumentException("Status não pode ser nulo ou vazio");
+            throw new BusinessException("Status não pode ser nulo ou vazio"); // Alterado
         }
         
         // Regra de negócio: Não pode alterar status de pedido cancelado ou entregue
         if ("CANCELADO".equals(pedido.getStatus()) || "ENTREGUE".equals(pedido.getStatus())) {
-             throw new IllegalStateException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().toLowerCase());
+             throw new BusinessException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().toLowerCase()); // Alterado
         }
 
         pedido.setStatus(novoStatus.toUpperCase());
@@ -131,16 +130,16 @@ public class PedidoService {
      */
     public PedidoResponseDTO cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Pedido não encontrado: " + id)); // Alterado
         
         // Regra de negócio: Não cancelar pedido já entregue
         if ("ENTREGUE".equals(pedido.getStatus())) {
-            throw new IllegalStateException("Não é possível cancelar um pedido já entregue.");
+            throw new BusinessException("Não é possível cancelar um pedido já entregue."); // Alterado
         }
 
         // Evita cancelamento duplicado
         if ("CANCELADO".equals(pedido.getStatus())) {
-            throw new IllegalStateException("Este pedido já está cancelado.");
+            throw new BusinessException("Este pedido já está cancelado."); // Alterado
         }
 
         pedido.setStatus("CANCELADO");

@@ -3,6 +3,7 @@ package com.deliverytech.delivery.service;
 import com.deliverytech.delivery.dto.RestauranteRequestDTO;
 import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,7 @@ public class RestauranteService {
      * (Refatorado para usar DTOs)
      */
     public RestauranteResponseDTO cadastrar(RestauranteRequestDTO dto) {
-        // Validações de @NotBlank, @Min, etc., são tratadas pelo @Valid no Controller
-
-        // Mapeia DTO para Entidade
+        // ... (mapeamento do DTO para Entidade)
         Restaurante restaurante = new Restaurante();
         restaurante.setNome(dto.getNome());
         restaurante.setCategoria(dto.getCategoria());
@@ -69,18 +68,14 @@ public class RestauranteService {
      */
     public RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO dto) {
         Restaurante restaurante = restauranteRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id)); // Alterado
 
-        // Validações de @NotBlank, @Min, etc., são tratadas pelo @Valid no Controller
-
-        // Atualizar campos com base no DTO
+        // ... (atualização dos campos com base no DTO)
         restaurante.setNome(dto.getNome());
         restaurante.setCategoria(dto.getCategoria());
         restaurante.setEndereco(dto.getEndereco());
         restaurante.setTelefone(dto.getTelefone());
         restaurante.setTaxaEntrega(dto.getTaxaEntrega());
-        
-        // Campos não incluídos no DTO (como avaliacao) são preservados.
 
         Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
         return new RestauranteResponseDTO(restauranteSalvo);
@@ -92,7 +87,7 @@ public class RestauranteService {
      */
     public RestauranteResponseDTO inativar(Long id) {
         Restaurante restaurante = restauranteRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id)); // Alterado
 
         restaurante.inativar();
         Restaurante restauranteInativado = restauranteRepository.save(restaurante);

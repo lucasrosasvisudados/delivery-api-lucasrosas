@@ -70,12 +70,12 @@ public class ClienteService {
      */
     public Cliente atualizar(Long id, Cliente clienteAtualizado) {
         Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id)); // Alterado
 
         // Verificar se email não está sendo usado por outro cliente
         if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
                 clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizado.getEmail());
+            throw new BusinessException("Email já cadastrado: " + clienteAtualizado.getEmail()); // Alterado
         }
 
         // Atualizar campos
@@ -92,7 +92,7 @@ public class ClienteService {
      */
     public void inativar(Long id) {
         Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id)); // Alterado
 
         cliente.inativar();
         clienteRepository.save(cliente);
