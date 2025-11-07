@@ -6,6 +6,7 @@ import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exceptions.BusinessException;
+import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
@@ -39,13 +40,12 @@ public class PedidoService {
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
         // 1. Validar e buscar entidades relacionadas
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + dto.getClienteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + dto.getClienteId())); // Alterado
 
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        // ... (restante do método para mapear DTO, definir valores padrão e salvar)
-        
+        // ... (mapeamento e save)
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
@@ -105,18 +105,18 @@ public class PedidoService {
      * Atualizar status do pedido
      * (Refatorado para retornar DTO)
      */
-public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
+    public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pedido não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id)); // Alterado
 
         // Validação de transição de status (exemplo)
         if (novoStatus == null || novoStatus.trim().isEmpty()) {
-            throw new BusinessException("Status não pode ser nulo ou vazio"); // Alterado
+            throw new BusinessException("Status não pode ser nulo ou vazio"); // Mantido (regra de negócio)
         }
         
         // Regra de negócio: Não pode alterar status de pedido cancelado ou entregue
         if ("CANCELADO".equals(pedido.getStatus()) || "ENTREGUE".equals(pedido.getStatus())) {
-             throw new BusinessException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().toLowerCase()); // Alterado
+             throw new BusinessException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().toLowerCase()); // Mantido (regra de negócio)
         }
 
         pedido.setStatus(novoStatus.toUpperCase());
@@ -130,16 +130,16 @@ public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
      */
     public PedidoResponseDTO cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pedido não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id)); // Alterado
         
         // Regra de negócio: Não cancelar pedido já entregue
         if ("ENTREGUE".equals(pedido.getStatus())) {
-            throw new BusinessException("Não é possível cancelar um pedido já entregue."); // Alterado
+            throw new BusinessException("Não é possível cancelar um pedido já entregue."); // Mantido (regra de negócio)
         }
 
         // Evita cancelamento duplicado
         if ("CANCELADO".equals(pedido.getStatus())) {
-            throw new BusinessException("Este pedido já está cancelado."); // Alterado
+            throw new BusinessException("Este pedido já está cancelado."); // Mantido (regra de negócio)
         }
 
         pedido.setStatus("CANCELADO");

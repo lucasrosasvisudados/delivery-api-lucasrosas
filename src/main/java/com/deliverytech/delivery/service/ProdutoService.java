@@ -5,6 +5,7 @@ import com.deliverytech.delivery.dto.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exceptions.BusinessException;
+import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,21 +30,22 @@ public class ProdutoService {
      * Cadastrar novo produto
      * (Refatorado para usar DTOs)
      */
-public ProdutoResponseDTO cadastrar(ProdutoRequestDTO dto) {
+        public ProdutoResponseDTO cadastrar(ProdutoRequestDTO dto) {
         // ...
 
         // 1. Valida se o Restaurante associado existe
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        // 2. Mapeia DTO para Entidade
+        // ... (mapeamento e save)
         Produto produto = new Produto();
-        // ...
-        produto.setRestaurante(restaurante); // Associa o restaurante encontrado
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setCategoria(dto.getCategoria());
+        produto.setRestaurante(restaurante); 
+        produto.setDisponivel(true);
 
-        // ...
-        
-        // 3. Salva e retorna o DTO de resposta
         Produto produtoSalvo = produtoRepository.save(produto);
         return new ProdutoResponseDTO(produtoSalvo);
     }
@@ -83,19 +85,20 @@ public ProdutoResponseDTO cadastrar(ProdutoRequestDTO dto) {
      * Atualizar dados do produto
      * (Refatorado para usar DTOs)
      */
-  public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO dto) {
+    public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO dto) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id)); // Alterado
 
         // Valida se o novo Restaurante associado existe
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        // Atualizar campos com base no DTO
-        // ...
-        produto.setRestaurante(restaurante); // Atualiza a referência
-        
-        // ...
+        // ... (atualização de campos e save)
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setCategoria(dto.getCategoria());
+        produto.setRestaurante(restaurante); 
 
         Produto produtoSalvo = produtoRepository.save(produto);
         return new ProdutoResponseDTO(produtoSalvo);
@@ -107,7 +110,7 @@ public ProdutoResponseDTO cadastrar(ProdutoRequestDTO dto) {
      */
     public ProdutoResponseDTO tornarIndisponivel(Long id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id)); // Alterado
 
         produto.setDisponivel(false);
         Produto produtoSalvo = produtoRepository.save(produto);

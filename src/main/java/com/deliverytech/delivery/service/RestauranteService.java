@@ -4,6 +4,7 @@ import com.deliverytech.delivery.dto.RestauranteRequestDTO;
 import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exceptions.BusinessException;
+import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class RestauranteService {
      */
     public RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO dto) {
         Restaurante restaurante = restauranteRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id)); // Alterado
 
         // ... (atualização dos campos com base no DTO)
         restaurante.setNome(dto.getNome());
@@ -87,7 +88,7 @@ public class RestauranteService {
      */
     public RestauranteResponseDTO inativar(Long id) {
         Restaurante restaurante = restauranteRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id)); // Alterado
 
         restaurante.inativar();
         Restaurante restauranteInativado = restauranteRepository.save(restaurante);

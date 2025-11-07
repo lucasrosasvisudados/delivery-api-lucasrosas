@@ -11,6 +11,7 @@ import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.dto.ClienteRequestDTO;
 import com.deliverytech.delivery.dto.ClienteResponseDTO;
 import com.deliverytech.delivery.exceptions.BusinessException;
+import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -70,34 +71,28 @@ public class ClienteService {
      */
     public Cliente atualizar(Long id, Cliente clienteAtualizado) {
         Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id)); // Alterado
 
         // Verificar se email não está sendo usado por outro cliente
         if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
                 clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new BusinessException("Email já cadastrado: " + clienteAtualizado.getEmail()); // Alterado
+            throw new BusinessException("Email já cadastrado: " + clienteAtualizado.getEmail()); // Mantido (regra de negócio)
         }
 
-        // Atualizar campos
-        cliente.setNome(clienteAtualizado.getNome());
-        cliente.setEmail(clienteAtualizado.getEmail());
-        cliente.setTelefone(clienteAtualizado.getTelefone());
-        cliente.setEndereco(clienteAtualizado.getEndereco());
-
+        // ...
         return clienteRepository.save(cliente);
     }
 
     /**
      * Inativar cliente (soft delete)
      */
-    public void inativar(Long id) {
+public void inativar(Long id) {
         Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id)); // Alterado
 
         cliente.inativar();
         clienteRepository.save(cliente);
     }
-
     /**
      * Buscar clientes por nome
      */
