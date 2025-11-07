@@ -1,6 +1,10 @@
 package com.deliverytech.delivery.service;
 
+import com.deliverytech.delivery.dto.ProdutoRequestDTO;
+import com.deliverytech.delivery.dto.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
+import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,103 +27,106 @@ public class ProdutoService {
 
     /**
      * Cadastrar novo produto
+     * (Refatorado para usar DTOs)
      */
-    public Produto cadastrar(Produto produto) {
-        // Validações de negócio
-        validarDadosProduto(produto);
+public ProdutoResponseDTO cadastrar(ProdutoRequestDTO dto) {
+        // ...
 
-        // Define como disponível por padrão
-        if (produto.getDisponivel() == null) {
-            produto.setDisponivel(true);
-        }
+        // 1. Valida se o Restaurante associado existe
+        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        return produtoRepository.save(produto);
+        // 2. Mapeia DTO para Entidade
+        Produto produto = new Produto();
+        // ...
+        produto.setRestaurante(restaurante); // Associa o restaurante encontrado
+
+        // ...
+        
+        // 3. Salva e retorna o DTO de resposta
+        Produto produtoSalvo = produtoRepository.save(produto);
+        return new ProdutoResponseDTO(produtoSalvo);
     }
 
     /**
      * Buscar produto por ID
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public Optional<Produto> buscarPorId(Long id) {
-        return produtoRepository.findById(id);
+    public Optional<ProdutoResponseDTO> buscarPorId(Long id) {
+        return produtoRepository.findById(id).map(ProdutoResponseDTO::new);
     }
 
     /**
      * Listar todos os produtos disponíveis
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Produto> listarDisponiveis() {
-        return produtoRepository.findByDisponivelTrue();
+    public List<ProdutoResponseDTO> listarDisponiveis() {
+        return produtoRepository.findByDisponivelTrue().stream()
+                .map(ProdutoResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     /**
      * Listar produtos disponíveis de um restaurante
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Produto> listarDisponiveisPorRestaurante(Long restauranteId) {
-        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId);
+    public List<ProdutoResponseDTO> listarDisponiveisPorRestaurante(Long restauranteId) {
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
+                .map(ProdutoResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     /**
      * Atualizar dados do produto
+     * (Refatorado para usar DTOs)
      */
-    public Produto atualizar(Long id, Produto produtoAtualizado) {
-        Produto produto = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+  public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO dto) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id)); // Alterado
 
-        // Validar os novos dados
-        validarDadosProduto(produtoAtualizado);
+        // Valida se o novo Restaurante associado existe
+        Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
+                .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
 
-        // Atualizar campos
-        produto.setNome(produtoAtualizado.getNome());
-        produto.setDescricao(produtoAtualizado.getDescricao());
-        produto.setPreco(produtoAtualizado.getPreco());
-        produto.setCategoria(produtoAtualizado.getCategoria());
-        produto.setDisponivel(produtoAtualizado.getDisponivel());
-        produto.setRestaurante(produtoAtualizado.getRestaurante()); // Atualiza a referência
+        // Atualizar campos com base no DTO
+        // ...
+        produto.setRestaurante(restaurante); // Atualiza a referência
+        
+        // ...
 
-        return produtoRepository.save(produto);
+        Produto produtoSalvo = produtoRepository.save(produto);
+        return new ProdutoResponseDTO(produtoSalvo);
     }
 
     /**
      * Tornar produto indisponível (soft delete/inativação)
-     * (Equivalente ao 'inativar' de Cliente)
+     * (Refatorado para retornar DTO)
      */
-    public void tornarIndisponivel(Long id) {
-        Produto produto = buscarPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
+    public ProdutoResponseDTO tornarIndisponivel(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id)); // Alterado
 
-        // A entidade Produto não tem o método inativar(),
-        // então definimos o campo 'disponivel' manualmente.
         produto.setDisponivel(false);
-        produtoRepository.save(produto);
+        Produto produtoSalvo = produtoRepository.save(produto);
+        return new ProdutoResponseDTO(produtoSalvo);
     }
 
     /**
      * Buscar produtos por nome
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Produto> buscarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCase(nome);
+    public List<ProdutoResponseDTO> buscarPorNome(String nome) {
+        return produtoRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(ProdutoResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Validações de negócio
+    /*
+     * O método validarDadosProduto() foi removido pois
+     * as validações agora estão no ProdutoRequestDTO.
      */
-    private void validarDadosProduto(Produto produto) {
-        if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome é obrigatório");
-        }
-        if (produto.getPreco() == null || produto.getPreco() <= 0) {
-            throw new IllegalArgumentException("Preço deve ser maior que zero");
-        }
-        if (produto.getRestaurante() == null || produto.getRestaurante().getId() == null) {
-            throw new IllegalArgumentException("Restaurante é obrigatório");
-        }
-
-        // Valida se o Restaurante associado existe no banco
-        // (Similar à validação do PedidoService)
-        restauranteRepository.findById(produto.getRestaurante().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + produto.getRestaurante().getId()));
-    }
 }

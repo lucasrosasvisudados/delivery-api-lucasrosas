@@ -1,15 +1,15 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.dto.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.service.RestauranteService;
+import jakarta.validation.Valid; // Import para @Valid
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/restaurantes")
@@ -21,12 +21,12 @@ public class RestauranteController {
 
     /*
      * Cadastrar novo restaurante
-     * (Padrão de ClienteController)
+     * (Refatorado para usar DTOs e @Valid)
      */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Validated @RequestBody Restaurante restaurante) {
+    public ResponseEntity<?> cadastrar(@Valid @RequestBody RestauranteRequestDTO dto) {
         try {
-            Restaurante restauranteSalvo = restauranteService.cadastrar(restaurante);
+            RestauranteResponseDTO restauranteSalvo = restauranteService.cadastrar(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(restauranteSalvo);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
@@ -37,38 +37,34 @@ public class RestauranteController {
 
     /*
      * Listar todos os restaurantes ativos
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping
-    public ResponseEntity<List<Restaurante>> listar() {
-        List<Restaurante> restaurantes = restauranteService.listarAtivos();
+    public ResponseEntity<List<RestauranteResponseDTO>> listar() {
+        List<RestauranteResponseDTO> restaurantes = restauranteService.listarAtivos();
         return ResponseEntity.ok(restaurantes);
     }
 
     /*
      * Buscar restaurante por ID
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
-        Optional<Restaurante> restaurante = restauranteService.buscarPorId(id);
-
-        if (restaurante.isPresent()) {
-            return ResponseEntity.ok(restaurante.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<RestauranteResponseDTO> buscarPorId(@PathVariable Long id) {
+        return restauranteService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /*
      * Atualizar restaurante
-     * (Padrão de ClienteController, usando PUT conforme solicitado)
+     * (Refatorado para usar DTOs e @Valid)
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                       @Validated @RequestBody Restaurante restaurante) {
+                                       @Valid @RequestBody RestauranteRequestDTO dto) {
         try {
-            Restaurante restauranteAtualizado = restauranteService.atualizar(id, restaurante);
+            RestauranteResponseDTO restauranteAtualizado = restauranteService.atualizar(id, dto);
             return ResponseEntity.ok(restauranteAtualizado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
@@ -80,13 +76,13 @@ public class RestauranteController {
 
     /*
      * Inativar restaurante (soft delete)
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> inativar(@PathVariable Long id) {
         try {
-            restauranteService.inativar(id);
-            return ResponseEntity.ok().body("Restaurante inativado com sucesso");
+            RestauranteResponseDTO restauranteInativado = restauranteService.inativar(id);
+            return ResponseEntity.ok(restauranteInativado); // Retorna o objeto inativado
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
@@ -97,20 +93,21 @@ public class RestauranteController {
 
     /*
      * Buscar restaurantes por nome
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/buscar")
-    public ResponseEntity<List<Restaurante>> buscarPorNome(@RequestParam String nome) {
-        List<Restaurante> restaurantes = restauranteService.buscarPorNome(nome);
+    public ResponseEntity<List<RestauranteResponseDTO>> buscarPorNome(@RequestParam String nome) {
+        List<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorNome(nome);
         return ResponseEntity.ok(restaurantes);
     }
 
     /*
      * Buscar restaurantes por categoria
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/categoria")
-    public ResponseEntity<List<Restaurante>> buscarPorCategoria(@RequestParam String categoria) {
-        List<Restaurante> restaurantes = restauranteService.buscarPorCategoria(categoria);
+    public ResponseEntity<List<RestauranteResponseDTO>> buscarPorCategoria(@RequestParam String categoria) {
+        List<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorCategoria(categoria);
         return ResponseEntity.ok(restaurantes);
     }
 }

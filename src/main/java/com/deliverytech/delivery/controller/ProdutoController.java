@@ -1,15 +1,15 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.entity.Produto;
+import com.deliverytech.delivery.dto.ProdutoRequestDTO;
+import com.deliverytech.delivery.dto.ProdutoResponseDTO;
 import com.deliverytech.delivery.service.ProdutoService;
+import jakarta.validation.Valid; // Import para @Valid
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/produtos")
@@ -21,14 +21,15 @@ public class ProdutoController {
 
     /*
      * Cadastrar novo produto
-     * (Padrão de ClienteController)
+     * (Refatorado para usar DTOs e @Valid)
      */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Validated @RequestBody Produto produto) {
+    public ResponseEntity<?> cadastrar(@Valid @RequestBody ProdutoRequestDTO dto) {
         try {
-            Produto produtoSalvo = produtoService.cadastrar(produto);
+            ProdutoResponseDTO produtoSalvo = produtoService.cadastrar(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(produtoSalvo);
         } catch (IllegalArgumentException e) {
+            // Captura erro de "Restaurante não encontrado"
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
@@ -37,40 +38,37 @@ public class ProdutoController {
 
     /*
      * Listar todos os produtos disponíveis
-     * (Equivalente ao listar() de Cliente)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping
-    public ResponseEntity<List<Produto>> listar() {
-        List<Produto> produtos = produtoService.listarDisponiveis();
+    public ResponseEntity<List<ProdutoResponseDTO>> listar() {
+        List<ProdutoResponseDTO> produtos = produtoService.listarDisponiveis();
         return ResponseEntity.ok(produtos);
     }
 
     /*
      * Buscar produto por ID
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
-        Optional<Produto> produto = produtoService.buscarPorId(id);
-
-        if (produto.isPresent()) {
-            return ResponseEntity.ok(produto.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ProdutoResponseDTO> buscarPorId(@PathVariable Long id) {
+        return produtoService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /*
      * Atualizar produto
-     * (Padrão de ClienteController, usando PUT conforme solicitado)
+     * (Refatorado para usar DTOs e @Valid)
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                       @Validated @RequestBody Produto produto) {
+                                       @Valid @RequestBody ProdutoRequestDTO dto) {
         try {
-            Produto produtoAtualizado = produtoService.atualizar(id, produto);
+            ProdutoResponseDTO produtoAtualizado = produtoService.atualizar(id, dto);
             return ResponseEntity.ok(produtoAtualizado);
         } catch (IllegalArgumentException e) {
+            // Captura erros de "Produto não encontrado" ou "Restaurante não encontrado"
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -80,13 +78,13 @@ public class ProdutoController {
 
     /*
      * Tornar produto indisponível (soft delete)
-     * (Equivalente ao inativar() de Cliente)
+     * (Refatorado para retornar DTO)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> tornarIndisponivel(@PathVariable Long id) {
         try {
-            produtoService.tornarIndisponivel(id);
-            return ResponseEntity.ok().body("Produto definido como indisponível");
+            ProdutoResponseDTO produtoIndisponivel = produtoService.tornarIndisponivel(id);
+            return ResponseEntity.ok(produtoIndisponivel);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
@@ -97,20 +95,21 @@ public class ProdutoController {
 
     /*
      * Buscar produtos por nome
-     * (Padrão de ClienteController)
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/buscar")
-    public ResponseEntity<List<Produto>> buscarPorNome(@RequestParam String nome) {
-        List<Produto> produtos = produtoService.buscarPorNome(nome);
+    public ResponseEntity<List<ProdutoResponseDTO>> buscarPorNome(@RequestParam String nome) {
+        List<ProdutoResponseDTO> produtos = produtoService.buscarPorNome(nome);
         return ResponseEntity.ok(produtos);
     }
 
     /*
      * Listar produtos disponíveis de um restaurante específico
+     * (Refatorado para retornar DTO)
      */
     @GetMapping("/restaurante/{restauranteId}")
-    public ResponseEntity<List<Produto>> listarPorRestaurante(@PathVariable Long restauranteId) {
-        List<Produto> produtos = produtoService.listarDisponiveisPorRestaurante(restauranteId);
+    public ResponseEntity<List<ProdutoResponseDTO>> listarPorRestaurante(@PathVariable Long restauranteId) {
+        List<ProdutoResponseDTO> produtos = produtoService.listarDisponiveisPorRestaurante(restauranteId);
         return ResponseEntity.ok(produtos);
     }
 }

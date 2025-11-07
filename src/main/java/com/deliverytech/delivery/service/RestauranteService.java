@@ -1,5 +1,7 @@
 package com.deliverytech.delivery.service;
 
+import com.deliverytech.delivery.dto.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -18,115 +21,108 @@ public class RestauranteService {
 
     /**
      * Cadastrar novo restaurante
-     * (Padrão de ClienteService)
+     * (Refatorado para usar DTOs)
      */
-    public Restaurante cadastrar(Restaurante restaurante) {
-        // Validações de negócio
-        validarDadosRestaurante(restaurante);
+    public RestauranteResponseDTO cadastrar(RestauranteRequestDTO dto) {
+        // Validações de @NotBlank, @Min, etc., são tratadas pelo @Valid no Controller
+
+        // Mapeia DTO para Entidade
+        Restaurante restaurante = new Restaurante();
+        restaurante.setNome(dto.getNome());
+        restaurante.setCategoria(dto.getCategoria());
+        restaurante.setEndereco(dto.getEndereco());
+        restaurante.setTelefone(dto.getTelefone());
+        restaurante.setTaxaEntrega(dto.getTaxaEntrega());
 
         // Definir como ativo por padrão
         restaurante.setAtivo(true);
-        
-        // Define avaliação padrão se não for fornecida
-        if (restaurante.getAvaliacao() == null) {
-            restaurante.setAvaliacao(0.0); // Nota inicial 0
-        }
+        // Define avaliação padrão
+        restaurante.setAvaliacao(0.0); // Nota inicial 0
 
-        return restauranteRepository.save(restaurante);
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
+        return new RestauranteResponseDTO(restauranteSalvo);
     }
 
     /**
      * Buscar restaurante por ID
-     * (Padrão de ClienteService)
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public Optional<Restaurante> buscarPorId(Long id) {
-        return restauranteRepository.findById(id);
+    public Optional<RestauranteResponseDTO> buscarPorId(Long id) {
+        return restauranteRepository.findById(id).map(RestauranteResponseDTO::new);
     }
 
     /**
      * Listar todos os restaurantes ativos
-     * (Padrão de ClienteService)
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Restaurante> listarAtivos() {
-        return restauranteRepository.findByAtivoTrue();
+    public List<RestauranteResponseDTO> listarAtivos() {
+        return restauranteRepository.findByAtivoTrue().stream()
+                .map(RestauranteResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     /**
      * Atualizar dados do restaurante
-     * (Padrão de ClienteService)
+     * (Refatorado para usar DTOs)
      */
-    public Restaurante atualizar(Long id, Restaurante restauranteAtualizado) {
-        Restaurante restaurante = buscarPorId(id)
+    public RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO dto) {
+        Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
 
-        // Validar os novos dados
-        validarDadosRestaurante(restauranteAtualizado);
+        // Validações de @NotBlank, @Min, etc., são tratadas pelo @Valid no Controller
 
-        // Atualizar campos
-        restaurante.setNome(restauranteAtualizado.getNome());
-        restaurante.setCategoria(restauranteAtualizado.getCategoria());
-        restaurante.setEndereco(restauranteAtualizado.getEndereco());
-        restaurante.setTelefone(restauranteAtualizado.getTelefone());
-        restaurante.setTaxaEntrega(restauranteAtualizado.getTaxaEntrega());
+        // Atualizar campos com base no DTO
+        restaurante.setNome(dto.getNome());
+        restaurante.setCategoria(dto.getCategoria());
+        restaurante.setEndereco(dto.getEndereco());
+        restaurante.setTelefone(dto.getTelefone());
+        restaurante.setTaxaEntrega(dto.getTaxaEntrega());
         
-        // Avaliação só deve ser atualizada se for fornecida
-        if (restauranteAtualizado.getAvaliacao() != null) {
-            restaurante.setAvaliacao(restauranteAtualizado.getAvaliacao());
-        }
+        // Campos não incluídos no DTO (como avaliacao) são preservados.
 
-        return restauranteRepository.save(restaurante);
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
+        return new RestauranteResponseDTO(restauranteSalvo);
     }
 
     /**
      * Inativar restaurante (soft delete)
-     * (Padrão de ClienteService)
+     * (Refatorado para retornar DTO)
      */
-    public void inativar(Long id) {
-        Restaurante restaurante = buscarPorId(id)
+    public RestauranteResponseDTO inativar(Long id) {
+        Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
 
         restaurante.inativar();
-        restauranteRepository.save(restaurante);
+        Restaurante restauranteInativado = restauranteRepository.save(restaurante);
+        return new RestauranteResponseDTO(restauranteInativado);
     }
 
     /**
      * Buscar restaurantes por nome
-     * (Padrão de ClienteService)
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Restaurante> buscarPorNome(String nome) {
-        return restauranteRepository.findByNomeContainingIgnoreCase(nome);
+    public List<RestauranteResponseDTO> buscarPorNome(String nome) {
+        return restauranteRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(RestauranteResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     /**
      * Buscar restaurantes por categoria
+     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
-    public List<Restaurante> buscarPorCategoria(String categoria) {
-        return restauranteRepository.findByCategoriaContainingIgnoreCase(categoria);
+    public List<RestauranteResponseDTO> buscarPorCategoria(String categoria) {
+        return restauranteRepository.findByCategoriaContainingIgnoreCase(categoria).stream()
+                .map(RestauranteResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Validações de negócio
-     * (Padrão de ClienteService)
+    /*
+     * O método validarDadosRestaurante() foi removido pois
+     * as validações agora estão no RestauranteRequestDTO.
      */
-    private void validarDadosRestaurante(Restaurante restaurante) {
-        if (restaurante.getNome() == null || restaurante.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome é obrigatório");
-        }
-        if (restaurante.getNome().length() < 2) {
-            throw new IllegalArgumentException("Nome deve ter pelo menos 2 caracteres");
-        }
-        if (restaurante.getTaxaEntrega() == null) {
-            throw new IllegalArgumentException("Taxa de entrega é obrigatória (pode ser 0)");
-        }
-        if (restaurante.getTaxaEntrega() < 0) {
-            throw new IllegalArgumentException("Taxa de entrega não pode ser negativa");
-        }
-        if (restaurante.getEndereco() == null || restaurante.getEndereco().trim().isEmpty()) {
-            throw new IllegalArgumentException("Endereço é obrigatório");
-        }
-    }
 }
