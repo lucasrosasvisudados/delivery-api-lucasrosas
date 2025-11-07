@@ -14,12 +14,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+// import java.math.BigDecimal; // Removido
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Testes de Persistência com CommandLineRunner.
+ * ATIVIDADE 2: Testes de Persistência com CommandLineRunner.
  * Esta classe é executada automaticamente na inicialização do Spring Boot.
  * Ela insere dados de teste e valida as consultas dos repositórios.
  */
@@ -101,7 +101,8 @@ public class DataLoader implements CommandLineRunner {
 
         // --- Testes RestauranteRepository ---
         System.out.println("Cenário 4: Restaurantes por Taxa (<= R$ 5,00):");
-        List<Restaurante> restsTaxa = restauranteRepository.findByTaxaEntregaLessThanEqual(new BigDecimal("5.00"));
+        // CORRIGIDO: Trocado 'new BigDecimal("5.00")' por '5.00' (Double)
+        List<Restaurante> restsTaxa = restauranteRepository.findByTaxaEntregaLessThanEqual(5.00);
         System.out.println("Resultado: Encontrados " + restsTaxa.size() + " restaurantes.");
         restsTaxa.forEach(r -> System.out.println(" - " + r.getNome() + " (Taxa: " + r.getTaxaEntrega() + ")"));
 
@@ -112,12 +113,16 @@ public class DataLoader implements CommandLineRunner {
 
         // --- Testes ProdutoRepository ---
         System.out.println("Cenário 2: Produtos por Restaurante (ID 1 - Pizzaria Bella):");
-        List<Produto> produtosRest = produtoRepository.findByRestauranteId(1L);
+        // Nota: IDs são gerados automaticamente. Se r1 não for ID=1, este teste pode falhar.
+        // Vamos buscar pelo objeto Restaurante para garantir.
+        Restaurante r1 = restauranteRepository.findByNomeContainingIgnoreCase("Pizzaria Bella").get(0);
+        List<Produto> produtosRest = produtoRepository.findByRestauranteId(r1.getId());
         System.out.println("Resultado: Encontrados " + produtosRest.size() + " produtos.");
         produtosRest.forEach(p -> System.out.println(" - " + p.getNome()));
 
         System.out.println("Teste: Produtos por Preço (<= R$ 20,00):");
-        List<Produto> prodsPreco = produtoRepository.findByPrecoLessThanEqual(new BigDecimal("20.00"));
+        // CORRIGIDO: Trocado 'new BigDecimal("20.00")' por '20.00' (Double)
+        List<Produto> prodsPreco = produtoRepository.findByPrecoLessThanEqual(20.00);
         System.out.println("Resultado: Encontrados " + prodsPreco.size() + " produtos.");
         prodsPreco.forEach(p -> System.out.println(" - " + p.getNome() + " (Preço: " + p.getPreco() + ")"));
 

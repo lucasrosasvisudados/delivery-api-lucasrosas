@@ -4,7 +4,7 @@ import com.deliverytech.delivery.entity.Restaurante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal; // Import adicionado
+// import java.math.BigDecimal; // Removido
 import java.util.List;
 
 @Repository
@@ -29,10 +29,10 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     List<Restaurante> findByCategoriaContainingIgnoreCase(String categoria);
 
     /**
-     * NOVO: Buscar restaurantes com taxa de entrega menor ou igual ao valor.
-     * (Conforme Roteiro - Atividade 1.2)
+     * CORRIGIDO: Buscar restaurantes com taxa de entrega menor ou igual ao valor.
+     * (Trocado BigDecimal por Double para bater com a Entidade)
      */
-    List<Restaurante> findByTaxaEntregaLessThanEqual(BigDecimal taxa);
+    List<Restaurante> findByTaxaEntregaLessThanEqual(Double taxa); // Corrigido
 
     /**
      * NOVO: Buscar os 5 primeiros restaurantes ordenados por nome (A-Z).

@@ -4,7 +4,7 @@ import com.deliverytech.delivery.entity.Produto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal; // Import adicionado
+// import java.math.BigDecimal; // Removido
 import java.util.List;
 
 @Repository
@@ -38,8 +38,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findByCategoriaContainingIgnoreCase(String categoria);
 
     /**
-     * NOVO: Buscar produtos com preço menor ou igual ao valor.
-     * (Conforme Roteiro - Atividade 1.3)
+     * CORRIGIDO: Buscar produtos com preço menor ou igual ao valor.
+     * (Trocado BigDecimal por Double para bater com a Entidade)
      */
-    List<Produto> findByPrecoLessThanEqual(BigDecimal preco);
+    List<Produto> findByPrecoLessThanEqual(Double preco); // Corrigido
 }
