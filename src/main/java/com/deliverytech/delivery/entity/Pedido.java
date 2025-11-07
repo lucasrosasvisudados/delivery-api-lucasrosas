@@ -1,9 +1,12 @@
 package com.deliverytech.delivery.entity;
 
+import com.deliverytech.delivery.enums.StatusPedido; // Import adicionado
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;     // Import adicionado
+import jakarta.persistence.Enumerated; // Import adicionado
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,7 +33,9 @@ public class Pedido {
     @Column(name = "data_pedido")
     private LocalDateTime dataPedido;
 
-    private String status;
+    // Alterado de String para StatusPedido
+    @Enumerated(EnumType.STRING)
+    private StatusPedido status;
 
     @Column(name = "valor_total")
     private Double valorTotal;

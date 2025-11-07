@@ -26,7 +26,9 @@ CREATE TABLE produtos (
     preco DECIMAL(10,2),
     categoria VARCHAR(50),
     disponivel BOOLEAN,
-    restaurante_id INT
+    restaurante_id INT,
+    -- Chave estrangeira adicionada para garantir integridade referencial
+    FOREIGN KEY (restaurante_id) REFERENCES restaurantes(id)
 );
 
 CREATE TABLE pedidos (

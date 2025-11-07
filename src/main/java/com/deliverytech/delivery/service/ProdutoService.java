@@ -4,7 +4,6 @@ import com.deliverytech.delivery.dto.ProdutoRequestDTO;
 import com.deliverytech.delivery.dto.ProdutoResponseDTO;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;

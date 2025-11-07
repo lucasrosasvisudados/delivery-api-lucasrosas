@@ -3,7 +3,6 @@ package com.deliverytech.delivery.service;
 import com.deliverytech.delivery.dto.RestauranteRequestDTO;
 import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,6 +5,7 @@ import com.deliverytech.delivery.dto.PedidoResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.enums.StatusPedido; // Import adicionado
 import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ClienteRepository;
@@ -28,24 +29,21 @@ public class PedidoService {
     private PedidoRepository pedidoRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository; // Para validar o Cliente
+    private ClienteRepository clienteRepository;
 
     @Autowired
-    private RestauranteRepository restauranteRepository; // Para validar o Restaurante
+    private RestauranteRepository restauranteRepository;
 
     /**
      * Criar novo pedido
-     * (Refatorado para usar DTOs)
      */
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
-        // 1. Validar e buscar entidades relacionadas
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + dto.getClienteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + dto.getClienteId()));
 
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId())); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + dto.getRestauranteId()));
 
-        // ... (mapeamento e save)
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setRestaurante(restaurante);
@@ -53,9 +51,9 @@ public class PedidoService {
         pedido.setValorTotal(dto.getValorTotal());
         pedido.setObservacoes(dto.getObservacoes());
 
-        pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 15).toUpperCase()); 
+        pedido.setNumeroPedido(UUID.randomUUID().toString().substring(0, 15).toUpperCase());
         pedido.setDataPedido(LocalDateTime.now());
-        pedido.setStatus("PENDENTE");
+        pedido.setStatus(StatusPedido.PENDENTE); // Alterado para Enum
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         return new PedidoResponseDTO(pedidoSalvo);
@@ -63,7 +61,6 @@ public class PedidoService {
 
     /**
      * Buscar pedido por ID
-     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
     public Optional<PedidoResponseDTO> buscarPorId(Long id) {
@@ -72,7 +69,6 @@ public class PedidoService {
 
     /**
      * Buscar pedido por Número do Pedido
-     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
     public Optional<PedidoResponseDTO> buscarPorNumeroPedido(String numeroPedido) {
@@ -81,7 +77,6 @@ public class PedidoService {
 
     /**
      * Listar todos os pedidos de um cliente
-     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listarPorCliente(Long clienteId) {
@@ -92,58 +87,71 @@ public class PedidoService {
 
     /**
      * Listar pedidos por status (ex: "PENDENTE", "CONFIRMADO", "ENTREGUE")
-     * (Refatorado para retornar DTO)
      */
     @Transactional(readOnly = true)
     public List<PedidoResponseDTO> listarPorStatus(String status) {
-        return pedidoRepository.findByStatus(status.toUpperCase()).stream()
+        // Converte a String de entrada para o Enum
+        StatusPedido statusEnum = parseStatus(status);
+        return pedidoRepository.findByStatus(statusEnum).stream()
                 .map(PedidoResponseDTO::new)
                 .collect(Collectors.toList());
     }
 
     /**
      * Atualizar status do pedido
-     * (Refatorado para retornar DTO)
      */
     public PedidoResponseDTO atualizarStatus(Long id, String novoStatus) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
 
-        // Validação de transição de status (exemplo)
-        if (novoStatus == null || novoStatus.trim().isEmpty()) {
-            throw new BusinessException("Status não pode ser nulo ou vazio"); // Mantido (regra de negócio)
-        }
-        
+        // Converte e valida a String do novo status
+        StatusPedido novoStatusEnum = parseStatus(novoStatus);
+
         // Regra de negócio: Não pode alterar status de pedido cancelado ou entregue
-        if ("CANCELADO".equals(pedido.getStatus()) || "ENTREGUE".equals(pedido.getStatus())) {
-             throw new BusinessException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().toLowerCase()); // Mantido (regra de negócio)
+        if (pedido.getStatus() == StatusPedido.CANCELADO || pedido.getStatus() == StatusPedido.ENTREGUE) {
+             throw new BusinessException("Não é possível alterar o status de um pedido que já foi " + pedido.getStatus().getDescricao().toLowerCase());
         }
 
-        pedido.setStatus(novoStatus.toUpperCase());
+        pedido.setStatus(novoStatusEnum);
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         return new PedidoResponseDTO(pedidoSalvo);
     }
 
     /**
      * Cancelar um pedido (define o status como "CANCELADO")
-     * (Refatorado para retornar DTO)
      */
     public PedidoResponseDTO cancelarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id)); // Alterado
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado: " + id));
         
         // Regra de negócio: Não cancelar pedido já entregue
-        if ("ENTREGUE".equals(pedido.getStatus())) {
-            throw new BusinessException("Não é possível cancelar um pedido já entregue."); // Mantido (regra de negócio)
+        if (pedido.getStatus() == StatusPedido.ENTREGUE) {
+            throw new BusinessException("Não é possível cancelar um pedido já entregue.");
         }
 
         // Evita cancelamento duplicado
-        if ("CANCELADO".equals(pedido.getStatus())) {
-            throw new BusinessException("Este pedido já está cancelado."); // Mantido (regra de negócio)
+        if (pedido.getStatus() == StatusPedido.CANCELADO) {
+            throw new BusinessException("Este pedido já está cancelado.");
         }
 
-        pedido.setStatus("CANCELADO");
+        pedido.setStatus(StatusPedido.CANCELADO); // Alterado para Enum
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         return new PedidoResponseDTO(pedidoSalvo);
+    }
+
+    /**
+     * Método utilitário para converter String em Enum StatusPedido
+     */
+    private StatusPedido parseStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            throw new BusinessException("Status não pode ser nulo ou vazio");
+        }
+        try {
+            // Converte a string (ex: "PENDENTE") para o enum (StatusPedido.PENDENTE)
+            return StatusPedido.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Lança um erro de negócio se a string não for um enum válido
+            throw new BusinessException("Status inválido: " + status);
+        }
     }
 }
