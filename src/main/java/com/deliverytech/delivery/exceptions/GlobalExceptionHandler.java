@@ -5,12 +5,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice; // Importação CRÍTICA
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handler Global de Exceções.
+ * A anotação @RestControllerAdvice permite que esta classe capture
+ * exceções lançadas por qualquer @RestController na aplicação.
+ */
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ValidationErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
         ValidationErrorResponse error = new ValidationErrorResponse(
@@ -44,11 +52,12 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
+        // Alterado: Passa o Map de erros para o construtor correto
         ValidationErrorResponse errorResponse = new ValidationErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Dados inválidos",
-                errors.toString(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                errors // Passa o Map diretamente, que será serializado como JSON
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -56,10 +65,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ValidationErrorResponse> handleGenericException(Exception ex) {
+        // É uma boa prática logar a exceção real para debug
+        ex.printStackTrace();
+
         ValidationErrorResponse error = new ValidationErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Erro interno do servidor",
-                "Ocorreu um erro inesperado",
+                "Ocorreu um erro inesperado: " + ex.getMessage(),
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

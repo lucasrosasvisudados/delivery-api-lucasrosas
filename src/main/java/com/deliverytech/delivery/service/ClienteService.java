@@ -69,18 +69,26 @@ public class ClienteService {
     /**
      * Atualizar dados do cliente
      */
-    public Cliente atualizar(Long id, Cliente clienteAtualizado) {
-        Cliente cliente = buscarPorId(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id)); // Alterado
+    public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
+        // 1. Busca o cliente ou lança EntityNotFoundException (404)
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado: " + id));
 
-        // Verificar se email não está sendo usado por outro cliente
-        if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
-                clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new BusinessException("Email já cadastrado: " + clienteAtualizado.getEmail()); // Mantido (regra de negócio)
+        // 2. Valida a regra de negócio do email (400)
+        if (!cliente.getEmail().equals(dto.getEmail()) &&
+                clienteRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
 
-        // ...
-        return clienteRepository.save(cliente);
+        // 3. Atualiza os campos da entidade com os dados do DTO
+        cliente.setNome(dto.getNome());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefone(dto.getTelefone());
+        cliente.setEndereco(dto.getEndereco());
+
+        // 4. Salva e retorna o DTO de resposta
+        Cliente clienteSalvo = clienteRepository.save(cliente);
+        return new ClienteResponseDTO(clienteSalvo);
     }
 
     /**
