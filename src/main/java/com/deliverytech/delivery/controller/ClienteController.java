@@ -1,6 +1,8 @@
 package com.deliverytech.delivery.controller;
 
-
+import com.deliverytech.delivery.dto.ClienteRequestDTO;
+import com.deliverytech.delivery.dto.ClienteResponseDTO;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +40,9 @@ public class ClienteController {
      * Cadastrar novo cliente
      */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Validated @RequestBody Cliente cliente) {
+    public ResponseEntity<?> cadastrar(@Valid @RequestBody ClienteRequestDTO cliente) {
         try {
-            Cliente clienteSalvo = clienteService.cadastrar(cliente);
+            ClienteResponseDTO clienteSalvo = clienteService.cadastrar(cliente);
             return ResponseEntity.status(HttpStatus.CREATED).body(clienteSalvo);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());

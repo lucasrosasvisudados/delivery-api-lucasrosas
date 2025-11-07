@@ -2,13 +2,15 @@ package com.deliverytech.delivery.service;
 
 import java.util.List;
 import java.util.Optional;
-
+import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.repository.ClienteRepository;
-
+import com.deliverytech.delivery.dto.ClienteRequestDTO;
+import com.deliverytech.delivery.dto.ClienteResponseDTO;
+import com.deliverytech.delivery.exceptions.BusinessException;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -20,19 +22,23 @@ public class ClienteService {
     /**
      * Cadastrar novo cliente
      */
-    public Cliente cadastrar(Cliente cliente) {
+    public ClienteResponseDTO cadastrar(ClienteRequestDTO dto) {
         // Validar email único
-        if (clienteRepository.existsByEmail(cliente.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + cliente.getEmail());
+        if (clienteRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
 
-        // Validações de negócio
-        validarDadosCliente(cliente);
+        Cliente cliente = new Cliente();
+        cliente.setNome(dto.getNome());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefone(dto.getTelefone());
+        cliente.setEndereco(dto.getEndereco());
 
         // Definir como ativo por padrão
         cliente.setAtivo(true);
+        cliente.setDataCadastro(LocalDateTime.now());
 
-        return clienteRepository.save(cliente);
+        return new ClienteResponseDTO(clienteRepository.save(cliente));
     }
 
     /**
@@ -102,8 +108,8 @@ public class ClienteService {
 
     /**
      * Validações de negócio
-     */
-    private void validarDadosCliente(Cliente cliente) {
+    
+    private void validarDadosCliente(ClienteRequestDTO cliente) {
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             throw new IllegalArgumentException("Nome é obrigatório");
         }
@@ -116,4 +122,6 @@ public class ClienteService {
             throw new IllegalArgumentException("Nome deve ter pelo menos 2 caracteres");
         }
     }
+    */
+
 }
