@@ -16,12 +16,11 @@ public class PedidoResponseDTO {
     private Long id;
     private String numeroPedido;
     private LocalDateTime dataPedido;
-    private String status;
+    private String status; // O DTO continua retornando String para o JSON
     private Double valorTotal;
     private String observacoes;
     private String itens;
 
-    // DTOs aninhados para fornecer mais contexto na resposta
     private ClienteResponseDTO cliente;
     private RestauranteResponseDTO restaurante;
 
@@ -33,12 +32,18 @@ public class PedidoResponseDTO {
         this.id = pedido.getId();
         this.numeroPedido = pedido.getNumeroPedido();
         this.dataPedido = pedido.getDataPedido();
-        this.status = pedido.getStatus();
+        
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Verifica se o status não é nulo antes de converter para String
+        if (pedido.getStatus() != null) {
+            this.status = pedido.getStatus().name(); // Converte o Enum (ex: StatusPedido.PENDENTE) para String ("PENDENTE")
+        }
+        // ------------------------------
+
         this.valorTotal = pedido.getValorTotal();
         this.observacoes = pedido.getObservacoes();
         this.itens = pedido.getItens();
 
-        // Mapeia as entidades aninhadas para seus respectivos DTOs
         if (pedido.getCliente() != null) {
             this.cliente = new ClienteResponseDTO(pedido.getCliente());
         }
