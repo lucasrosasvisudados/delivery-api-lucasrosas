@@ -1,7 +1,7 @@
-package com.deliverytech.delivery.service;
+package com.deliverytech.delivery.services;
 
-import com.deliverytech.delivery.dto.RestauranteRequestDTO;
-import com.deliverytech.delivery.dto.RestauranteResponseDTO;
+import com.deliverytech.delivery.dto.request.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.repository.RestauranteRepository;

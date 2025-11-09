@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.dto;
+package com.deliverytech.delivery.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

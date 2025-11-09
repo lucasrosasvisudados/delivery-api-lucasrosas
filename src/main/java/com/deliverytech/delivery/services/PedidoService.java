@@ -1,7 +1,7 @@
-package com.deliverytech.delivery.service;
+package com.deliverytech.delivery.services;
 
-import com.deliverytech.delivery.dto.PedidoRequestDTO;
-import com.deliverytech.delivery.dto.PedidoResponseDTO;
+import com.deliverytech.delivery.dto.request.PedidoRequestDTO;
+import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Restaurante;

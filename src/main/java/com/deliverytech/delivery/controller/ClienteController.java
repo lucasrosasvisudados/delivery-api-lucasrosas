@@ -1,7 +1,8 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.dto.ClienteRequestDTO;
-import com.deliverytech.delivery.dto.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.request.ClienteRequestDTO;
+import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +15,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.deliverytech.delivery.exceptions.EntityNotFoundException;
+import com.deliverytech.delivery.services.ClienteService;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.exceptions.BusinessException;
-import com.deliverytech.delivery.service.ClienteService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

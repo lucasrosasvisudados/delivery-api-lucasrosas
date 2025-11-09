@@ -1,8 +1,9 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.dto.RestauranteRequestDTO;
-import com.deliverytech.delivery.dto.RestauranteResponseDTO;
-import com.deliverytech.delivery.service.RestauranteService;
+import com.deliverytech.delivery.dto.request.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
+import com.deliverytech.delivery.services.RestauranteService;
+
 import jakarta.validation.Valid; // Import para @Valid
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
