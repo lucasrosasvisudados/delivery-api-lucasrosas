@@ -73,15 +73,17 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
-    public RestauranteResponseDTO inativar(Long id) {
+    public RestauranteResponseDTO ativarDesativar(Long id) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
+        
         if (restaurante.getAtivo() == false) {
             restaurante.setAtivo(true);
         }
-        restaurante.inativar();
-        Restaurante restauranteInativado = restauranteRepository.save(restaurante);
-        return modelMapper.map(restauranteInativado, RestauranteResponseDTO.class);
+        restaurante.setAtivo(false);
+        
+        Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
+        return modelMapper.map(restauranteSalvo, RestauranteResponseDTO.class);
     }
 
     @Override

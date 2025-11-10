@@ -95,9 +95,9 @@ public class RestauranteController {
             @ApiResponse(responseCode = "200", description = "Status do restaurante alterado"),
             @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
     })
-    public ResponseEntity<RestauranteResponseDTO> inativar(@PathVariable Long id) {
+    public ResponseEntity<RestauranteResponseDTO> ativarDesativar(@PathVariable Long id) {
         
-        RestauranteResponseDTO restaurante = restauranteService.inativar(id); 
+        RestauranteResponseDTO restaurante = restauranteService.ativarDesativar(id); 
         return ResponseEntity.ok(restaurante);
     }
 

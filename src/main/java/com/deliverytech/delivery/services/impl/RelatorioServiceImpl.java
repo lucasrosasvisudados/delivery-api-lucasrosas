@@ -1,6 +1,7 @@
 package com.deliverytech.delivery.services.impl;
 
 import com.deliverytech.delivery.dto.response.RelatorioResponseDTO;
+import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.projection.RelatorioVendas;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.deliverytech.delivery.services.RelatorioService;
@@ -23,14 +24,14 @@ public class RelatorioServiceImpl implements RelatorioService {
     private ModelMapper modelMapper;
 
     @Override
-    public List<RelatorioResponseDTO> relatorioVendasPorRestaurante() {
+    @Transactional(readOnly = true)
+    public RelatorioResponseDTO relatorioVendasPorRestauranteId(Long restauranteId) {
         
-        // 1. Chama a query de projeção do repositório
-        List<RelatorioVendas> projecoes = restauranteRepository.relatorioVendasPorRestaurante();
-
-        // 2. Mapeia a lista de projeções (Interfaces) para a lista de DTOs (Classes)
-        return projecoes.stream()
-                .map(projecao -> modelMapper.map(projecao, RelatorioResponseDTO.class))
-                .collect(Collectors.toList());
+        // 1. Chama a nova query do repositório
+        RelatorioVendas projecao = restauranteRepository.relatorioVendasPorRestauranteId(restauranteId)
+            .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado com ID: " + restauranteId));
+        
+        // 2. Mapeia a projeção única para o DTO
+        return modelMapper.map(projecao, RelatorioResponseDTO.class);
     }
 }

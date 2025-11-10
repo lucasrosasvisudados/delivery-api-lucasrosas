@@ -5,5 +5,6 @@ import com.deliverytech.delivery.dto.response.RelatorioResponseDTO;
 
 public interface RelatorioService {
 
-    List<RelatorioResponseDTO> relatorioVendasPorRestaurante();
+    //Método para o relatório específico
+    RelatorioResponseDTO relatorioVendasPorRestauranteId(Long restauranteId);
 }

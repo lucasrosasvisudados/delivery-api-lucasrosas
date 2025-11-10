@@ -4,10 +4,12 @@ import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.projection.RelatorioVendas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
@@ -37,12 +39,13 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
      */
     List<Restaurante> findTop5ByOrderByNomeAsc();
 
-        // No RestauranteRepository:
+    // NOVO: Consulta para o Relatório Específico por ID
     @Query("SELECT r.nome as nomeRestaurante, " +
             "SUM(p.valorTotal) as totalVendas, " +
-            "COUNT(p.id) as quantidadePedidos " +
+            "COUNT(p.id) as quantidadePedidos " + // Corrigido para bater com a projeção
             "FROM Restaurante r " +
             "LEFT JOIN Pedido p ON r.id = p.restaurante.id " +
+            "WHERE r.id = :restauranteId " + // Adicionado filtro WHERE
             "GROUP BY r.id, r.nome")
-    List<RelatorioVendas> relatorioVendasPorRestaurante();
+    Optional<RelatorioVendas> relatorioVendasPorRestauranteId(@Param("restauranteId") Long restauranteId);
 }

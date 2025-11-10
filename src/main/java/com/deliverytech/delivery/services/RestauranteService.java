@@ -14,7 +14,7 @@ public interface RestauranteService {
 
     RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO dto);
 
-    RestauranteResponseDTO inativar(Long id);
+    RestauranteResponseDTO ativarDesativar(Long id);
 
     List<RestauranteResponseDTO> buscarPorNome(String nome);
 
