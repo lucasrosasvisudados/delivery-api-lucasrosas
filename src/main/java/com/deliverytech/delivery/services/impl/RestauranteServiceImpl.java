@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -32,7 +33,7 @@ public class RestauranteServiceImpl implements RestauranteService {
 
         // Define regras de negócio
         restaurante.setAtivo(true);
-        restaurante.setAvaliacao(0.0);
+        restaurante.setAvaliacao(new BigDecimal("0.0"));
 
         Restaurante restauranteSalvo = restauranteRepository.save(restaurante);
 
@@ -43,8 +44,10 @@ public class RestauranteServiceImpl implements RestauranteService {
     @Override
     @Transactional(readOnly = true)
     public RestauranteResponseDTO buscarPorId(Long id) {
-        return restauranteRepository.findById(id)
-                .map(restaurante -> modelMapper.map(restaurante, RestauranteResponseDTO.class));
+        Restaurante restaurante = restauranteRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado com id: " + id));
+
+        return modelMapper.map(restaurante, RestauranteResponseDTO.class);        
     }
 
     @Override
