@@ -4,14 +4,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-/**
- * DTO para o cadastro e atualização de Restaurantes.
- * Contém os campos que o cliente deve informar, com as devidas validações
- * baseadas no RestauranteService.
- */
+
 @Data
+@Schema(description = "DTO para requisição de criação ou atualização de restaurante", title = "Restaurante Request DTO")
 public class RestauranteRequestDTO {
 
     @NotBlank(message = "O nome é obrigatório")
@@ -29,8 +30,6 @@ public class RestauranteRequestDTO {
 
     @NotNull(message = "A taxa de entrega é obrigatória (pode ser 0)")
     @Min(value = 0, message = "A taxa de entrega não pode ser negativa")
-    private Double taxaEntrega;
+    private BigDecimal taxaEntrega;
 
-    // Campos como 'id', 'avaliacao' e 'ativo' são omitidos,
-    // pois são gerenciados pelo backend (definidos no service).
 }

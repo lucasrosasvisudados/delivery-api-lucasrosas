@@ -2,12 +2,16 @@ package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequestDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
-import com.deliverytech.delivery.services.RestauranteService;
+import com.deliverytech.delivery.services.RestauranteService; 
 
-import jakarta.validation.Valid; // Import para @Valid
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated; 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,32 +19,32 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurantes")
 @CrossOrigin(origins = "*")
+@Validated 
 public class RestauranteController {
 
     @Autowired
-    private RestauranteService restauranteService;
+    private RestauranteService restauranteService; // Injetando a interface
 
     /*
      * Cadastrar novo restaurante
-     * (Refatorado para usar DTOs e @Valid)
      */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@Valid @RequestBody RestauranteRequestDTO dto) {
-        try {
-            RestauranteResponseDTO restauranteSalvo = restauranteService.cadastrar(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(restauranteSalvo);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
-        }
+    @Operation(summary = "Cadastrar um novo restaurante", description = "Endpoint para cadastrar um novo restaurante na plataforma.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Restaurante cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida (dados faltando ou incorretos)")
+    })
+    public ResponseEntity<RestauranteResponseDTO> cadastrar(@Valid @RequestBody RestauranteRequestDTO dto) {
+        // Bloco try-catch removido. O GlobalExceptionHandler cuidará dos erros.
+        RestauranteResponseDTO restauranteSalvo = restauranteService.cadastrar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(restauranteSalvo);
     }
 
     /*
      * Listar todos os restaurantes ativos
-     * (Refatorado para retornar DTO)
      */
     @GetMapping
+    @Operation(summary = "Listar restaurantes ativos", description = "Retorna uma lista de todos os restaurantes que estão com status 'ativo'.")
     public ResponseEntity<List<RestauranteResponseDTO>> listar() {
         List<RestauranteResponseDTO> restaurantes = restauranteService.listarAtivos();
         return ResponseEntity.ok(restaurantes);
@@ -48,55 +52,55 @@ public class RestauranteController {
 
     /*
      * Buscar restaurante por ID
-     * (Refatorado para retornar DTO)
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Buscar restaurante por ID", description = "Retorna um restaurante específico pelo seu ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Restaurante encontrado"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
     public ResponseEntity<RestauranteResponseDTO> buscarPorId(@PathVariable Long id) {
-        return restauranteService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        RestauranteResponseDTO restaurante = restauranteService.buscarPorId(id);
+        return ResponseEntity.ok(restaurante);
     }
 
     /*
      * Atualizar restaurante
-     * (Refatorado para usar DTOs e @Valid)
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                       @Valid @RequestBody RestauranteRequestDTO dto) {
-        try {
-            RestauranteResponseDTO restauranteAtualizado = restauranteService.atualizar(id, dto);
-            return ResponseEntity.ok(restauranteAtualizado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
-        }
+    @Operation(summary = "Atualizar um restaurante", description = "Atualiza os dados de um restaurante existente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<RestauranteResponseDTO> atualizar(@PathVariable Long id,
+        @Valid @RequestBody RestauranteRequestDTO dto) {
+    
+        RestauranteResponseDTO restauranteAtualizado = restauranteService.atualizar(id, dto);
+        return ResponseEntity.ok(restauranteAtualizado);
     }
 
     /*
-     * Inativar restaurante (soft delete)
-     * (Refatorado para retornar DTO)
+     * Inativar/Ativar restaurante (soft delete toggle)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> inativar(@PathVariable Long id) {
-        try {
-            RestauranteResponseDTO restauranteInativado = restauranteService.inativar(id);
-            return ResponseEntity.ok(restauranteInativado); // Retorna o objeto inativado
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
-        }
+    @Operation(summary = "Ativar ou Inativar um restaurante", description = "Muda o status 'ativo' de um restaurante (lógica de soft delete/toggle).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status do restaurante alterado"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<RestauranteResponseDTO> inativar(@PathVariable Long id) {
+        
+        RestauranteResponseDTO restaurante = restauranteService.inativar(id); 
+        return ResponseEntity.ok(restaurante);
     }
 
     /*
      * Buscar restaurantes por nome
-     * (Refatorado para retornar DTO)
      */
     @GetMapping("/buscar")
+    @Operation(summary = "Buscar restaurantes por nome", description = "Retorna uma lista de restaurantes cujo nome contenha o texto buscado.")
     public ResponseEntity<List<RestauranteResponseDTO>> buscarPorNome(@RequestParam String nome) {
         List<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorNome(nome);
         return ResponseEntity.ok(restaurantes);
@@ -104,9 +108,9 @@ public class RestauranteController {
 
     /*
      * Buscar restaurantes por categoria
-     * (Refatorado para retornar DTO)
      */
     @GetMapping("/categoria")
+    @Operation(summary = "Buscar restaurantes por categoria", description = "Retorna uma lista de restaurantes cuja categoria contenha o texto buscado.")
     public ResponseEntity<List<RestauranteResponseDTO>> buscarPorCategoria(@RequestParam String categoria) {
         List<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorCategoria(categoria);
         return ResponseEntity.ok(restaurantes);

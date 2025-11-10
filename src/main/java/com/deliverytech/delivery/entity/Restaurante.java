@@ -1,5 +1,7 @@
 package com.deliverytech.delivery.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,11 +31,11 @@ public class Restaurante {
     private String telefone;
 
     @Column(name = "taxa_entrega")
-    private Double taxaEntrega;
+    private BigDecimal taxaEntrega;
 
-    private Double avaliacao;
+    @Column(name = "avaliacao", nullable = true)
+    private BigDecimal avaliacao;
 
-    @Column(nullable = true)
     private Boolean ativo;
 
     public void inativar() {
