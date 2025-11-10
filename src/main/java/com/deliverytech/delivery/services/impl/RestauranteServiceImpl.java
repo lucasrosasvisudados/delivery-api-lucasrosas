@@ -76,7 +76,9 @@ public class RestauranteServiceImpl implements RestauranteService {
     public RestauranteResponseDTO inativar(Long id) {
         Restaurante restaurante = restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado: " + id));
-
+        if (restaurante.getAtivo() == false) {
+            restaurante.setAtivo(true);
+        }
         restaurante.inativar();
         Restaurante restauranteInativado = restauranteRepository.save(restaurante);
         return modelMapper.map(restauranteInativado, RestauranteResponseDTO.class);

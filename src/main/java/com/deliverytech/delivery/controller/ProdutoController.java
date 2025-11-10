@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/produtos")
+@RequestMapping("/api/produtos")
 @CrossOrigin(origins = "*")
 @Validated
 public class ProdutoController {
@@ -67,7 +67,7 @@ public class ProdutoController {
         return ResponseEntity.ok(produtoAtualizado);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Tornar produto indisponível", description = "Muda o status 'disponivel' de um produto para 'false'.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status do produto alterado"),
@@ -85,14 +85,4 @@ public class ProdutoController {
         return ResponseEntity.ok(produtos);
     }
 
-    @GetMapping("/restaurante/{restauranteId}")
-    @Operation(summary = "Listar produtos de um restaurante", description = "Retorna produtos disponíveis de um restaurante específico.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Produtos listados"),
-            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
-    })
-    public ResponseEntity<List<ProdutoResponseDTO>> listarPorRestaurante(@PathVariable Long restauranteId) {
-        List<ProdutoResponseDTO> produtos = produtoService.listarDisponiveisPorRestaurante(restauranteId);
-        return ResponseEntity.ok(produtos);
-    }
 }

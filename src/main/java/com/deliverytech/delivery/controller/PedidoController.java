@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos")
 @CrossOrigin(origins = "*")
 @Validated
 public class PedidoController {
@@ -65,18 +65,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
-    @GetMapping("/cliente/{clienteId}")
-    @Operation(summary = "Listar pedidos por cliente", description = "Retorna todos os pedidos de um cliente específico.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pedidos listados"),
-            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
-    })
-    public ResponseEntity<List<PedidoResponseDTO>> listarPorCliente(@PathVariable Long clienteId) {
-        List<PedidoResponseDTO> pedidos = pedidoService.listarPorCliente(clienteId);
-        return ResponseEntity.ok(pedidos);
-    }
-
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     @Operation(summary = "Atualizar status de um pedido", description = "Altera o status de um pedido existente (ex: PENDENTE -> CONFIRMADO).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status atualizado"),
@@ -88,7 +77,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoAtualizado);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Cancelar um pedido", description = "Muda o status de um pedido para 'CANCELADO'.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido cancelado"),

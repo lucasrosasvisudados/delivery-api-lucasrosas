@@ -5,6 +5,7 @@ import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
 import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.services.ClienteService;
@@ -79,6 +80,7 @@ public class ClienteServiceImpl implements ClienteService {
             clienteExistente.setAtivo(true);    
         }
         clienteExistente.setAtivo(false);
+        clienteRepository.save(clienteExistente);
         return null;
     }
 

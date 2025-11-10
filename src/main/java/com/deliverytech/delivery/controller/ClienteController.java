@@ -2,10 +2,10 @@ package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.ClienteRequestDTO;
 import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,14 +15,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.deliverytech.delivery.exceptions.EntityNotFoundException;
 import com.deliverytech.delivery.services.ClienteService;
-import com.deliverytech.delivery.entity.Cliente;
-import com.deliverytech.delivery.exceptions.BusinessException;
+import com.deliverytech.delivery.services.PedidoService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,12 +32,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/api/clientes")
 @CrossOrigin(origins = "*")
 public class ClienteController {
     
     @Autowired
     private ClienteService clienteService;
+
+    @Autowired
+    private PedidoService pedidoService;
 
     /*
      * Cadastrar novo cliente
@@ -86,7 +88,7 @@ public class ClienteController {
     /*
      * Inativar cliente (soft delete)
      */
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
      public ResponseEntity<ClienteResponseDTO> inativar(@PathVariable Long id) {
         ClienteResponseDTO cliente = clienteService.ativarDesativar(id);
         return ResponseEntity.ok(cliente);
@@ -110,6 +112,15 @@ public class ClienteController {
         return ResponseEntity.ok(cliente);
     }
      
-
+    @GetMapping("/cliente/{clienteId}")
+    @Operation(summary = "Listar pedidos por cliente", description = "Retorna todos os pedidos de um cliente específico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos listados"),
+            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+    })
+    public ResponseEntity<List<PedidoResponseDTO>> listarPorCliente(@PathVariable Long clienteId) {
+        List<PedidoResponseDTO> pedidos = pedidoService.listarPorCliente(clienteId);
+        return ResponseEntity.ok(pedidos);
+    }
 
 }

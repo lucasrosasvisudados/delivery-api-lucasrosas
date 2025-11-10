@@ -1,7 +1,9 @@
 package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.response.ProdutoResponseDTO;
 import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
+import com.deliverytech.delivery.services.ProdutoService;
 import com.deliverytech.delivery.services.RestauranteService; 
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,13 +19,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/restaurantes")
+@RequestMapping("/api/restaurantes")
 @CrossOrigin(origins = "*")
 @Validated 
 public class RestauranteController {
 
     @Autowired
     private RestauranteService restauranteService; // Injetando a interface
+
+    @Autowired
+    private ProdutoService produtoService;
 
     /*
      * Cadastrar novo restaurante
@@ -84,7 +89,7 @@ public class RestauranteController {
     /*
      * Inativar/Ativar restaurante (soft delete toggle)
      */
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     @Operation(summary = "Ativar ou Inativar um restaurante", description = "Muda o status 'ativo' de um restaurante (lógica de soft delete/toggle).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Status do restaurante alterado"),
@@ -114,5 +119,16 @@ public class RestauranteController {
     public ResponseEntity<List<RestauranteResponseDTO>> buscarPorCategoria(@RequestParam String categoria) {
         List<RestauranteResponseDTO> restaurantes = restauranteService.buscarPorCategoria(categoria);
         return ResponseEntity.ok(restaurantes);
+    }
+
+    @GetMapping("/{restauranteId}/produtos")
+    @Operation(summary = "Listar produtos de um restaurante", description = "Retorna produtos disponíveis de um restaurante específico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Produtos listados"),
+            @ApiResponse(responseCode = "404", description = "Restaurante não encontrado")
+    })
+    public ResponseEntity<List<ProdutoResponseDTO>> listarPorRestaurante(@PathVariable Long restauranteId) {
+        List<ProdutoResponseDTO> produtos = produtoService.listarDisponiveisPorRestaurante(restauranteId);
+        return ResponseEntity.ok(produtos);
     }
 }

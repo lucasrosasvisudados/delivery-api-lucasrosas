@@ -86,7 +86,9 @@ public class ProdutoServiceImpl implements ProdutoService {
     public ProdutoResponseDTO tornarIndisponivel(Long id) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado: " + id));
-
+        if (produto.getDisponivel() == false) {
+            produto.setDisponivel(true);
+        }
         produto.setDisponivel(false);
         Produto produtoSalvo = produtoRepository.save(produto);
         return modelMapper.map(produtoSalvo, ProdutoResponseDTO.class);

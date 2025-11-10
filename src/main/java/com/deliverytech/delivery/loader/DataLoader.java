@@ -34,8 +34,17 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("--- [INICIANDO DATA LOADER] ---");
-        carregarDados();
+
+        // Verifica se o banco já tem dados. Se tiver, não insere de novo.
+        if (clienteRepository.count() == 0) {
+            carregarDados();
+        } else {
+            System.out.println("O banco de dados já está populado. Ignorando o carregamento de dados.");
+        }
+        // Os testes de consulta devem rodar sempre,
+        // para validar os dados existentes.
         testarConsultas();
+
         System.out.println("--- [DATA LOADER FINALIZADO] ---");
     }
 
