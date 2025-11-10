@@ -104,16 +104,12 @@ public class ClienteController {
     /*
      * Buscar cliente por email
      */
-//@GetMapping("/email/{email}")
-//    public ResponseEntity<ClienteResponseDTO> buscarPorEmail(@PathVariable String email) {
-//        Optional<ClienteResponseDTO> cliente = clienteService.buscarPorEmail(email);
-//
-//        if (cliente.isPresent()) {
-//            return ResponseEntity.ok(cliente.get());
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+    @GetMapping("/email/{email}")
+    public ResponseEntity<ClienteResponseDTO> buscarPorEmail(@PathVariable String email) {
+        ClienteResponseDTO cliente = clienteService.buscarPorEmail(email);
+        return ResponseEntity.ok(cliente);
+    }
+     
 
 
 }

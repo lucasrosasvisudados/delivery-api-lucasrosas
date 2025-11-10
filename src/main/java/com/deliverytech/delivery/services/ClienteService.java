@@ -18,5 +18,5 @@ public interface ClienteService {
 
     List<ClienteResponseDTO> buscarPorNome(String nome);
 
-
+    ClienteResponseDTO buscarPorEmail(String email);
 }

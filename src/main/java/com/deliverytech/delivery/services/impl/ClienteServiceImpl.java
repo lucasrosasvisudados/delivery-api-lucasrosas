@@ -2,6 +2,8 @@ package com.deliverytech.delivery.services.impl;
 
 import com.deliverytech.delivery.dto.request.ClienteRequestDTO;
 import com.deliverytech.delivery.dto.response.ClienteResponseDTO;
+import com.deliverytech.delivery.dto.response.PedidoResponseDTO;
+import com.deliverytech.delivery.dto.response.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.ClienteRepository;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -40,7 +43,10 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public ClienteResponseDTO buscarPorId(Long id) {
-        return null;
+        Cliente clienteExistente = clienteRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado com id: " + id));
+
+        return modelMapper.map(clienteExistente, ClienteResponseDTO.class);
     }
 
     @Override
@@ -67,16 +73,34 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public ClienteResponseDTO ativarDesativar(Long id) {
+        Cliente clienteExistente = clienteRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado com id: " + id));
+        if (clienteExistente.getAtivo() == false) {
+            clienteExistente.setAtivo(true);    
+        }
+        clienteExistente.setAtivo(false);
         return null;
     }
 
     @Override
     public List<ClienteResponseDTO> listarAtivos() {
-        return List.of();
+        return clienteRepository.findByAtivoTrue().stream()
+                .map(cliente -> modelMapper.map(cliente, ClienteResponseDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ClienteResponseDTO> buscarPorNome(String nome) {
-        return List.of();
+        return clienteRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(cliente -> modelMapper.map(cliente, ClienteResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        Cliente clienteExistente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Cliente não encontrado com email: " + email));
+
+        return modelMapper.map(clienteExistente, ClienteResponseDTO.class);
     }
 }
